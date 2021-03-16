@@ -1,25 +1,25 @@
 package co.id.telkom.digitalent.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@RequestMapping(value="/api/v1", produces={"application/json"})
 @RestController
 public class HelloController {
 
-    @GetMapping("/api/v1/hello")
-    public String hello() {
-        return "Hello World!";
+    @GetMapping
+    public String index() {
+        return "SpringBoot REST API is Running!";
     }
 
-    @GetMapping("/api/v1/example")
-    public String getExample(@RequestParam("email") String email, @RequestParam("name") String name) {
+    @GetMapping("/example")
+    public String getExample(@RequestParam("email") String email,
+                             @RequestParam("name") String name) {
         return "Email: " + email +  ", Name: " + name;
     }
 
-    @PostMapping("/api/v1/example")
-    public String setExample(@RequestParam("email") String email, @RequestParam("name") String name) {
+    @PostMapping("/example")
+    public String postExample(@RequestParam("email") String email,
+                              @RequestParam("name") String name) {
         return "Email: " + email +  ", Name: " + name;
     }
 }
