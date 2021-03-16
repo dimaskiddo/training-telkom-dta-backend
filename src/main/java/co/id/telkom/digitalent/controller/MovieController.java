@@ -17,6 +17,7 @@ public class MovieController {
                                   @RequestParam("genre") String genre,
                                   @RequestParam("release_year") String releaseYear) {
         MovieModel movieModel = new MovieModel();
+
         movieModel.setMovieTitle(title);
         movieModel.setMovieGenre(genre);
         movieModel.setMovieReleaseYear(releaseYear);
