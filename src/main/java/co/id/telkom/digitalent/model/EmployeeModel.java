@@ -22,6 +22,12 @@ public class EmployeeModel {
     @Column(name = "employee_age")
     private int employeeAge;
 
+    @Column(name = "employee_image")
+    private String employeeImage;
+
+    @Column(name = "password")
+    private String password;
+
     public int getEmployeeId() {
         return employeeId;
     }
@@ -60,5 +66,21 @@ public class EmployeeModel {
 
     public void setEmployeeAge(int employeeAge) {
         this.employeeAge = employeeAge;
+    }
+
+    public String getEmployeeImage() {
+        return employeeImage;
+    }
+
+    public void setEmployeeImage(String employeeImage) {
+        this.employeeImage = employeeImage;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
