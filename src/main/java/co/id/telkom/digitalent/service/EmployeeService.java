@@ -8,6 +8,7 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +27,9 @@ public class EmployeeService {
     private final Path dirUploads = Paths.get("uploads");
 
     @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
@@ -34,6 +38,7 @@ public class EmployeeService {
     }
 
     public EmployeeModel createEmployeeModel(EmployeeModel employeeModel) {
+        employeeModel.setPassword(bCryptPasswordEncoder.encode(employeeModel.getPassword()));
         return employeeRepository.save(employeeModel);
     }
 
@@ -60,6 +65,10 @@ public class EmployeeService {
 
     public Optional<EmployeeDTO> getEmployeeById(int id) {
         return employeeRepository.findById(id).map(this::convertToDTOMapper);
+    }
+
+    public Optional<EmployeeModel> getEmployeeByEmail(String email) {
+        return employeeRepository.getByEmployeeEmail(email);
     }
 
     public Optional<EmployeeModel> getEmployeeByNameAndAddress(String name, String address) {

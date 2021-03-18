@@ -1,7 +1,7 @@
 package co.id.telkom.digitalent.controller;
 
 import co.id.telkom.digitalent.model.ExampleModel;
-import co.id.telkom.digitalent.response.BuilderResponse;
+import co.id.telkom.digitalent.response.WriteResponse;
 import co.id.telkom.digitalent.response.DataResponse;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,16 +15,8 @@ public class ExampleController {
 
     @GetMapping
     public void getExample(HttpServletRequest request, HttpServletResponse response,
-                           @RequestParam(value = "name", required = false) String name,
-                           @RequestParam(value = "email", required = false) String email) throws IOException {
-        if (name == null) {
-            name = "";
-        }
-
-        if (email == null) {
-            email = "";
-        }
-
+                           @RequestParam(value = "name") String name,
+                           @RequestParam(value = "email") String email) throws IOException {
         ExampleModel exampleModel = new ExampleModel();
         DataResponse<ExampleModel> dataResponse = new DataResponse<>();
 
@@ -32,10 +24,9 @@ public class ExampleController {
         exampleModel.setEmail(email);
 
         dataResponse.setCode(HttpServletResponse.SC_OK);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(exampleModel);
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
     @PostMapping
@@ -57,9 +48,8 @@ public class ExampleController {
         exampleModel.setEmail(email);
 
         dataResponse.setCode(HttpServletResponse.SC_OK);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(exampleModel);
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 }

@@ -12,6 +12,8 @@ import java.util.Optional;
 
 public interface EmployeeRepository extends PagingAndSortingRepository<EmployeeModel, Integer> {
 
+    Optional<EmployeeModel> getByEmployeeEmail(String email);
+
     Page<EmployeeModel> getByEmployeeName(String name, Pageable pagination);
 
     Page<EmployeeModel> getByEmployeeAddress(String address, Pageable pagination);
