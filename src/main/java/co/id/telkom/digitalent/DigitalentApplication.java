@@ -9,5 +9,4 @@ public class DigitalentApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DigitalentApplication.class, args);
 	}
-
 }

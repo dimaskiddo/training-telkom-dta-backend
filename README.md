@@ -17,3 +17,12 @@
 - SpringBoot - REST Custom Response
 - SpringBoot - REST Global Response
 - SpringBoot - Data Transfer Object (DTO) with Manual Convertion
+
+### Day 3
+
+- SpringBoot - Data Transfer Object (DTO) with Model Mapper
+- SpringBoot - Sorting
+- SpringBoot - Pagination
+- SpringBoot - JPQL
+- SpringBoot - Native Query
+- SpringBoot - Refactor

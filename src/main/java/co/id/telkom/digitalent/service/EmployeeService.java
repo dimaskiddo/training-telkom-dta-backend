@@ -3,17 +3,20 @@ package co.id.telkom.digitalent.service;
 import co.id.telkom.digitalent.dto.EmployeeDTO;
 import co.id.telkom.digitalent.model.EmployeeModel;
 import co.id.telkom.digitalent.repository.EmployeeRepository;
-import co.id.telkom.digitalent.response.GlobalResponse;
-import co.id.telkom.digitalent.utils.ResponseMessage;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.*;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
@@ -21,6 +24,9 @@ public class EmployeeService {
 
     // Uploads Folder in Current Path
     private final Path dirUploads = Paths.get("uploads");
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Autowired
     public EmployeeService(EmployeeRepository employeeRepository) {
@@ -31,86 +37,56 @@ public class EmployeeService {
         return employeeRepository.save(employeeModel);
     }
 
-    public GlobalResponse<Iterable<EmployeeModel>> getAllEmployee() {
-        GlobalResponse<Iterable<EmployeeModel>> employeeAllResponse = new GlobalResponse<>();
-
-        employeeAllResponse.setStatus(ResponseMessage.SUCCESS);
-        employeeAllResponse.setMessage(HttpStatus.OK);
-        employeeAllResponse.setData(employeeRepository.findAll());
-
-        return employeeAllResponse;
+    public Iterable<EmployeeModel> getAllEmployee() {
+        return employeeRepository.findAll();
     }
 
-    public GlobalResponse<EmployeeDTO> getEmployeeById(int id) {
-        GlobalResponse<EmployeeDTO> employeeResponse = new GlobalResponse<>();
+    public Iterable<EmployeeModel> getAllEmployeeSortByName() {
+        return employeeRepository.findAll(Sort.by(Order.asc("employeeName")));
+    }
+
+    public Page<EmployeeModel> getEmployeeByPage(int page, int size) {
+        Pageable pagination = PageRequest.of(page, size);
+        return employeeRepository.findAll(pagination);
+    }
+
+    public List<EmployeeDTO> getEmployeeByAddressAndName(String address, String name) {
+        return employeeRepository.getEmployeeByAddressAndName(address, name).stream().map(this::convertToDTOMapper).collect(Collectors.toList());
+    }
+
+    public List<EmployeeDTO> getEmployeeByAge(int age) {
+        return employeeRepository.getEmployeeByAge(age).stream().map(this::convertToDTOMapper).collect(Collectors.toList());
+    }
+
+    public Optional<EmployeeDTO> getEmployeeById(int id) {
+        return employeeRepository.findById(id).map(this::convertToDTOMapper);
+    }
+
+    public Optional<EmployeeModel> getEmployeeByNameAndAddress(String name, String address) {
+        return employeeRepository.getByEmployeeNameAndEmployeeAddress(name, address);
+    }
+
+    public Page<EmployeeModel> getEmployeeByName(String name, int page, int size) {
+        Pageable pagination = PageRequest.of(page, size);
+        return employeeRepository.getByEmployeeName(name, pagination);
+    }
+
+    public Page<EmployeeModel> getEmployeeByAddress(String address, int page, int size) {
+        Pageable pagination = PageRequest.of(page, size);
+        return employeeRepository.getByEmployeeAddress(address, pagination);
+    }
+
+    public EmployeeModel updateEmployee(EmployeeModel employeeModel, int id) {
         Optional<EmployeeModel> currentEmployee = employeeRepository.findById(id);
 
         if (currentEmployee.isPresent()) {
-            employeeResponse.setStatus(ResponseMessage.SUCCESS);
-            employeeResponse.setMessage(HttpStatus.OK);
-            employeeResponse.setData(currentEmployee.map(this::convertToDTO).get());
-        } else {
-            employeeResponse.setStatus(ResponseMessage.FAILED);
-            employeeResponse.setMessage(HttpStatus.NOT_FOUND);
+            return employeeRepository.save(employeeModel);
         }
 
-        return employeeResponse;
+        return null;
     }
 
-    public GlobalResponse<Iterable<EmployeeModel>> getEmployeeByName(String name) {
-        GlobalResponse<Iterable<EmployeeModel>> employeeResponse = new GlobalResponse<>();
-
-        employeeResponse.setStatus(ResponseMessage.SUCCESS);
-        employeeResponse.setMessage(HttpStatus.OK);
-        employeeResponse.setData(employeeRepository.findByEmployeeName(name));
-
-        return employeeResponse;
-    }
-
-    public GlobalResponse<Iterable<EmployeeModel>> getEmployeeByAddress(String address) {
-        GlobalResponse<Iterable<EmployeeModel>> employeeResponse = new GlobalResponse<>();
-
-        employeeResponse.setStatus(ResponseMessage.SUCCESS);
-        employeeResponse.setMessage(HttpStatus.OK);
-        employeeResponse.setData(employeeRepository.findByEmployeeAddress(address));
-
-        return employeeResponse;
-    }
-
-    public GlobalResponse<EmployeeDTO> getEmployeeByNameAndAddress(String name, String address) {
-        GlobalResponse<EmployeeDTO> employeeResponse = new GlobalResponse<>();
-        Optional<EmployeeModel> currentEmployee = employeeRepository.findByEmployeeNameAndEmployeeAddress(name, address);
-
-        if (currentEmployee.isPresent()) {
-            employeeResponse.setStatus(ResponseMessage.SUCCESS);
-            employeeResponse.setMessage(HttpStatus.OK);
-            employeeResponse.setData(currentEmployee.map(this::convertToDTO).get());
-        } else {
-            employeeResponse.setStatus(ResponseMessage.FAILED);
-            employeeResponse.setMessage(HttpStatus.NOT_FOUND);
-        }
-
-        return employeeResponse;
-    }
-
-    public GlobalResponse<EmployeeModel> updateEmployee(EmployeeModel employeeModel, int id) {
-        GlobalResponse<EmployeeModel> employeeResponse = new GlobalResponse<>();
-        Optional<EmployeeModel> currentEmployee = employeeRepository.findById(id);
-
-        if (currentEmployee.isPresent()) {
-            employeeResponse.setStatus(ResponseMessage.SUCCESS);
-            employeeResponse.setMessage(HttpStatus.OK);
-            employeeResponse.setData(employeeRepository.save(employeeModel));
-        } else {
-            employeeResponse.setStatus(ResponseMessage.FAILED);
-            employeeResponse.setMessage(HttpStatus.NOT_FOUND);
-        }
-
-        return employeeResponse;
-    }
-
-    public GlobalResponse<EmployeeModel> patchEmployee(EmployeeModel employeeModel, int id) {
-        GlobalResponse<EmployeeModel> employeeResponse = new GlobalResponse<>();
+    public EmployeeModel patchEmployee(EmployeeModel employeeModel, int id) {
         Optional<EmployeeModel> currentEmployee = employeeRepository.findById(id);
 
         if (currentEmployee.isPresent()) {
@@ -134,43 +110,28 @@ public class EmployeeService {
                 currEmployee.setEmployeeAge(employeeModel.getEmployeeAge());
             }
 
-            employeeResponse.setStatus(ResponseMessage.SUCCESS);
-            employeeResponse.setMessage(HttpStatus.OK);
-            employeeResponse.setData(employeeRepository.save(employeeModel));
-        } else {
-            employeeResponse.setStatus(ResponseMessage.FAILED);
-            employeeResponse.setMessage(HttpStatus.NOT_FOUND);
+            return employeeRepository.save(employeeModel);
         }
 
-        return employeeResponse;
+        return null;
     }
 
-    public GlobalResponse<EmployeeDTO> deleteEmployee(int id) {
-        GlobalResponse<EmployeeDTO> employeeResponse = new GlobalResponse<>();
+    public EmployeeDTO deleteEmployee(int id) {
         Optional<EmployeeModel> currentEmployee = employeeRepository.findById(id);
 
         if (currentEmployee.isPresent()) {
             employeeRepository.deleteById(id);
-
-            employeeResponse.setStatus(ResponseMessage.SUCCESS);
-            employeeResponse.setMessage(HttpStatus.OK);
-            employeeResponse.setData(currentEmployee.map(this::convertToDTO).get());
-        } else {
-            employeeResponse.setStatus(ResponseMessage.FAILED);
-            employeeResponse.setMessage(HttpStatus.NOT_FOUND);
+            return currentEmployee.map(this::convertToDTOMapper).get();
         }
 
-        return employeeResponse;
+        return null;
     }
 
-    public boolean deleteEmployeeByName(String name) {
+    public void deleteEmployeeByName(String name) {
         employeeRepository.deleteByEmployeeName(name);
-        return true;
     }
 
-    public GlobalResponse<EmployeeModel> uploadEmployeeFile(MultipartFile file, int id) {
-        GlobalResponse<EmployeeModel> employeeResponse = new GlobalResponse<>();
-
+    public EmployeeModel uploadEmployeeFile(MultipartFile file, int id) {
         try {
             Optional<EmployeeModel> currentEmployee = employeeRepository.findById(id);
 
@@ -185,22 +146,16 @@ public class EmployeeService {
                 Files.copy(file.getInputStream(), this.dirUploads.resolve(fileName));
 
                 currEmployee.setEmployeeImage(fileName);
-
-                employeeResponse.setStatus(ResponseMessage.SUCCESS);
-                employeeResponse.setMessage(HttpStatus.OK);
-                employeeResponse.setData(employeeRepository.save(currEmployee));
-            } else {
-                employeeResponse.setStatus(ResponseMessage.FAILED);
-                employeeResponse.setMessage(HttpStatus.NOT_FOUND);
+                return employeeRepository.save(currEmployee);
             }
         } catch (Exception e) {
-            employeeResponse.setStatus(e.getMessage());
-            employeeResponse.setMessage(HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
         }
 
-        return employeeResponse;
+        return null;
     }
 
+    // Get File Extension
     private String getFileExtension(String filename) {
         String extension = "";
         String[] arr = filename.split("\\.");
@@ -214,13 +169,21 @@ public class EmployeeService {
     }
 
     // Convert To DTO Manually
-    private EmployeeDTO convertToDTO(EmployeeModel employeeModel) {
+    private EmployeeDTO convertToDTOManual(EmployeeModel employeeModel) {
         EmployeeDTO employeeDTO = new EmployeeDTO();
 
         employeeDTO.setEmployeeName(employeeModel.getEmployeeName());
         employeeDTO.setEmployeeEmail(employeeModel.getEmployeeEmail());
         employeeDTO.setEmployeeAddress(employeeModel.getEmployeeAddress());
         employeeDTO.setEmployeeAge(employeeModel.getEmployeeAge());
+
+        return employeeDTO;
+    }
+
+    // Convert To DTO with Model Mapper
+    private EmployeeDTO convertToDTOMapper(EmployeeModel employeeModel) {
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);
+        EmployeeDTO employeeDTO = modelMapper.map(employeeModel, EmployeeDTO.class);
 
         return employeeDTO;
     }

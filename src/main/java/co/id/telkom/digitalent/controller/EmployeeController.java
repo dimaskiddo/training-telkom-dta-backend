@@ -2,11 +2,19 @@ package co.id.telkom.digitalent.controller;
 
 import co.id.telkom.digitalent.dto.EmployeeDTO;
 import co.id.telkom.digitalent.model.EmployeeModel;
-import co.id.telkom.digitalent.response.GlobalResponse;
+import co.id.telkom.digitalent.response.BuilderResponse;
+import co.id.telkom.digitalent.response.DataResponse;
 import co.id.telkom.digitalent.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 @RequestMapping(value="/api/v1/employees", produces={"application/json"})
 @RestController
@@ -16,61 +24,258 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @PostMapping
-    public EmployeeModel createEmployee(@RequestBody EmployeeModel employeeModel) {
-        return employeeService.createEmployeeModel(employeeModel);
+    public void createEmployee(HttpServletRequest request, HttpServletResponse response,
+                               @RequestBody EmployeeModel employeeModel) throws IOException {
+        DataResponse<EmployeeModel> dataResponse = new DataResponse<>();
+
+        dataResponse.setCode(HttpServletResponse.SC_CREATED);
+        dataResponse.setStatus(BuilderResponse.SUCCESS);
+        dataResponse.setData(employeeService.createEmployeeModel(employeeModel));
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 
     @GetMapping
-    public GlobalResponse<Iterable<EmployeeModel>> getAllEmployee() {
-        return employeeService.getAllEmployee();
+    public void getAllEmployee(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        DataResponse<Iterable<EmployeeModel>> dataResponse = new DataResponse<>();
+
+        dataResponse.setCode(HttpServletResponse.SC_OK);
+        dataResponse.setStatus(BuilderResponse.SUCCESS);
+        dataResponse.setData(employeeService.getAllEmployee());
+
+        BuilderResponse.responseWriter(response, dataResponse);
+    }
+
+    @GetMapping("/sort/name")
+    public void getAllEmployeeSortByName(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        DataResponse<Iterable<EmployeeModel>> dataResponse = new DataResponse<>();
+
+        dataResponse.setCode(HttpServletResponse.SC_OK);
+        dataResponse.setStatus(BuilderResponse.SUCCESS);
+        dataResponse.setData(employeeService.getAllEmployeeSortByName());
+
+        BuilderResponse.responseWriter(response, dataResponse);
+    }
+
+    @GetMapping("/pagination")
+    public void getEmployeeByPage(HttpServletRequest request, HttpServletResponse response,
+                                  @RequestParam(name = "page", required = false) Integer page,
+                                  @RequestParam(name = "size", required = false) Integer size) throws IOException {
+        // Validate Page Number
+        if (page == null) {
+            page = 0;
+        }
+
+        // Validate Page Size
+        if (size == null) {
+            size = 10;
+        }
+
+        DataResponse<Page<EmployeeModel>> dataResponse = new DataResponse<>();
+
+        dataResponse.setCode(HttpServletResponse.SC_OK);
+        dataResponse.setStatus(BuilderResponse.SUCCESS);
+        dataResponse.setData(employeeService.getEmployeeByPage(page, size));
+
+        BuilderResponse.responseWriter(response, dataResponse);
+    }
+
+    @GetMapping("/query")
+    public void getEmployeeByAddressAndName(HttpServletRequest request, HttpServletResponse response,
+                                            @RequestParam("address") String address,
+                                            @RequestParam("name") String name) throws IOException {
+        DataResponse<List<EmployeeDTO>> dataResponse = new DataResponse<>();
+
+        dataResponse.setCode(HttpServletResponse.SC_OK);
+        dataResponse.setStatus(BuilderResponse.SUCCESS);
+        dataResponse.setData(employeeService.getEmployeeByAddressAndName(address, name));
+
+        BuilderResponse.responseWriter(response, dataResponse);
+    }
+
+    @GetMapping("/query/age")
+    public void getEmployeeByAge(HttpServletRequest request, HttpServletResponse response,
+                                 @RequestParam("age") int age) throws IOException {
+        DataResponse<List<EmployeeDTO>> dataResponse = new DataResponse<>();
+
+        dataResponse.setCode(HttpServletResponse.SC_OK);
+        dataResponse.setStatus(BuilderResponse.SUCCESS);
+        dataResponse.setData(employeeService.getEmployeeByAge(age));
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 
     @GetMapping("/{id}")
-    public GlobalResponse<EmployeeDTO> getEmployeeById(@PathVariable int id) {
-        return employeeService.getEmployeeById(id);
+    public void getEmployeeById(HttpServletRequest request, HttpServletResponse response,
+                                @PathVariable int id) throws IOException {
+        Optional<EmployeeDTO> currEmployee = employeeService.getEmployeeById(id);
+        DataResponse<EmployeeDTO> dataResponse = new DataResponse<>();
+
+        if (currEmployee.isPresent()) {
+            dataResponse.setCode(HttpServletResponse.SC_OK);
+            dataResponse.setStatus(BuilderResponse.SUCCESS);
+            dataResponse.setData(currEmployee.get());
+        } else {
+            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
+            dataResponse.setStatus(BuilderResponse.FAILED);
+        }
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 
-    @GetMapping("/name/{name}")
-    public GlobalResponse<Iterable<EmployeeModel>> getEmployeeByName(@PathVariable String name) {
-        return employeeService.getEmployeeByName(name);
+    @GetMapping("/find")
+    public void getEmployeeByNameAndAddress(HttpServletRequest request, HttpServletResponse response,
+                                            @RequestParam String name,
+                                            @RequestParam String address) throws IOException {
+        Optional<EmployeeModel> currEmployee = employeeService.getEmployeeByNameAndAddress(name, address);
+        DataResponse<EmployeeModel> dataResponse = new DataResponse<>();
+
+        if (currEmployee.isPresent()) {
+            dataResponse.setCode(HttpServletResponse.SC_OK);
+            dataResponse.setStatus(BuilderResponse.SUCCESS);
+            dataResponse.setData(currEmployee.get());
+        } else {
+            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
+            dataResponse.setStatus(BuilderResponse.FAILED);
+        }
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 
-    @GetMapping("/address/{address}")
-    public GlobalResponse<Iterable<EmployeeModel>> getEmployeeByAddress(@PathVariable String address) {
-        return employeeService.getEmployeeByAddress(address);
+    @GetMapping("/find/name/{name}")
+    public void getEmployeeByName(HttpServletRequest request, HttpServletResponse response,
+                                  @PathVariable String name,
+                                  @RequestParam("page") Integer page,
+                                  @RequestParam("size") Integer size) throws IOException {
+        // Validate Page Number
+        if (page == null) {
+            page = 0;
+        }
+
+        // Validate Page Size
+        if (size == null) {
+            size = 10;
+        }
+
+        DataResponse<Page<EmployeeModel>> dataResponse = new DataResponse<>();
+
+        dataResponse.setCode(HttpServletResponse.SC_OK);
+        dataResponse.setStatus(BuilderResponse.SUCCESS);
+        dataResponse.setData(employeeService.getEmployeeByName(name, page, size));
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 
-    @GetMapping("/findByNameAndAddress")
-    public GlobalResponse<EmployeeDTO> getEmployeeByNameAndAddress(@RequestParam String name,
-                                                                   @RequestParam String address) {
-        return employeeService.getEmployeeByNameAndAddress(name, address);
+    @GetMapping("/find/address/{address}")
+    public void getEmployeeByAddress(HttpServletRequest request, HttpServletResponse response,
+                                     @PathVariable String address,
+                                     @RequestParam("page") Integer page,
+                                     @RequestParam("size") Integer size) throws IOException {
+        // Validate Page Number
+        if (page == null) {
+            page = 0;
+        }
+
+        // Validate Page Size
+        if (size == null) {
+            size = 10;
+        }
+
+        DataResponse<Page<EmployeeModel>> dataResponse = new DataResponse<>();
+
+        dataResponse.setCode(HttpServletResponse.SC_OK);
+        dataResponse.setStatus(BuilderResponse.SUCCESS);
+        dataResponse.setData(employeeService.getEmployeeByAddress(address, page, size));
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 
     @PutMapping("/{id}")
-    public GlobalResponse<EmployeeModel> updateEmployee(@PathVariable int id,
-                                                        @RequestBody EmployeeModel employeeModel) {
-        return employeeService.updateEmployee(employeeModel, id);
+    public void updateEmployee(HttpServletRequest request, HttpServletResponse response,
+                               @PathVariable int id,
+                               @RequestBody EmployeeModel employeeModel) throws IOException {
+        EmployeeModel updatedEmployee = employeeService.updateEmployee(employeeModel, id);
+        DataResponse<EmployeeModel> dataResponse = new DataResponse<>();
+
+        if (updatedEmployee != null) {
+            dataResponse.setCode(HttpServletResponse.SC_OK);
+            dataResponse.setStatus(BuilderResponse.SUCCESS);
+            dataResponse.setData(updatedEmployee);
+        } else {
+            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
+            dataResponse.setStatus(BuilderResponse.FAILED);
+        }
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 
     @PatchMapping("/{id}")
-    public GlobalResponse<EmployeeModel> patchEmployee(@PathVariable int id,
-                                                       @RequestBody EmployeeModel employeeModel) {
-        return employeeService.patchEmployee(employeeModel, id);
+    public void patchEmployee(HttpServletRequest request, HttpServletResponse response,
+                              @PathVariable int id,
+                              @RequestBody EmployeeModel employeeModel) throws IOException {
+        EmployeeModel patchedEmployee = employeeService.patchEmployee(employeeModel, id);
+        DataResponse<EmployeeModel> dataResponse = new DataResponse<>();
+
+        if (patchedEmployee != null) {
+            dataResponse.setCode(HttpServletResponse.SC_OK);
+            dataResponse.setStatus(BuilderResponse.SUCCESS);
+            dataResponse.setData(patchedEmployee);
+        } else {
+            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
+            dataResponse.setStatus(BuilderResponse.FAILED);
+        }
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 
     @DeleteMapping("/{id}")
-    public GlobalResponse<EmployeeDTO> deleteEmployee(@PathVariable int id) {
-        return employeeService.deleteEmployee(id);
+    public void deleteEmployee(HttpServletRequest request, HttpServletResponse response,
+                               @PathVariable int id) throws IOException {
+        EmployeeDTO deletedEmployee = employeeService.deleteEmployee(id);
+        DataResponse<EmployeeDTO> dataResponse = new DataResponse<>();
+
+        if (deletedEmployee != null) {
+            dataResponse.setCode(HttpServletResponse.SC_OK);
+            dataResponse.setStatus(BuilderResponse.SUCCESS);
+            dataResponse.setData(deletedEmployee);
+        } else {
+            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
+            dataResponse.setStatus(BuilderResponse.FAILED);
+        }
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 
     @DeleteMapping("/name/{name}")
-    public boolean deleteEmployeeByName(@PathVariable String name) {
-        return employeeService.deleteEmployeeByName(name);
+    public void deleteEmployeeByName(HttpServletRequest request, HttpServletResponse response,
+                                     @PathVariable String name) throws IOException {
+        DataResponse<Boolean> dataResponse = new DataResponse<>();
+
+        employeeService.deleteEmployeeByName(name);
+
+        dataResponse.setCode(HttpServletResponse.SC_OK);
+        dataResponse.setStatus(BuilderResponse.SUCCESS);
+        dataResponse.setData(true);
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 
     @PostMapping("/upload/{id}")
-    public GlobalResponse<EmployeeModel> uploadEmployeeFile(@PathVariable int id,
-                                            @RequestParam("file") MultipartFile file) {
-        return employeeService.uploadEmployeeFile(file, id);
+    public void uploadEmployeeFile(HttpServletRequest request, HttpServletResponse response,
+                                   @PathVariable int id,
+                                   @RequestParam("file") MultipartFile file) throws IOException {
+        EmployeeModel uploadedEmployeeFile = employeeService.uploadEmployeeFile(file, id);
+        DataResponse<EmployeeModel> dataResponse = new DataResponse<>();
+
+        if (uploadedEmployeeFile != null) {
+            dataResponse.setCode(HttpServletResponse.SC_OK);
+            dataResponse.setStatus(BuilderResponse.SUCCESS);
+            dataResponse.setData(uploadedEmployeeFile);
+        } else {
+            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
+            dataResponse.setStatus(BuilderResponse.FAILED);
+        }
+
+        BuilderResponse.responseWriter(response, dataResponse);
     }
 }
