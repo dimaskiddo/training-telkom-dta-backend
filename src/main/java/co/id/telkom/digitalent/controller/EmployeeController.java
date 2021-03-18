@@ -2,7 +2,8 @@ package co.id.telkom.digitalent.controller;
 
 import co.id.telkom.digitalent.dto.EmployeeDTO;
 import co.id.telkom.digitalent.model.EmployeeModel;
-import co.id.telkom.digitalent.response.BuilderResponse;
+import co.id.telkom.digitalent.response.SuccessResponse;
+import co.id.telkom.digitalent.response.WriteResponse;
 import co.id.telkom.digitalent.response.DataResponse;
 import co.id.telkom.digitalent.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,9 @@ public class EmployeeController {
         DataResponse<EmployeeModel> dataResponse = new DataResponse<>();
 
         dataResponse.setCode(HttpServletResponse.SC_CREATED);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(employeeService.createEmployeeModel(employeeModel));
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
     @GetMapping
@@ -40,10 +40,9 @@ public class EmployeeController {
         DataResponse<Iterable<EmployeeModel>> dataResponse = new DataResponse<>();
 
         dataResponse.setCode(HttpServletResponse.SC_OK);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(employeeService.getAllEmployee());
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
     @GetMapping("/sort/name")
@@ -51,10 +50,9 @@ public class EmployeeController {
         DataResponse<Iterable<EmployeeModel>> dataResponse = new DataResponse<>();
 
         dataResponse.setCode(HttpServletResponse.SC_OK);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(employeeService.getAllEmployeeSortByName());
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
     @GetMapping("/pagination")
@@ -74,10 +72,9 @@ public class EmployeeController {
         DataResponse<Page<EmployeeModel>> dataResponse = new DataResponse<>();
 
         dataResponse.setCode(HttpServletResponse.SC_OK);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(employeeService.getEmployeeByPage(page, size));
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
     @GetMapping("/query")
@@ -87,10 +84,9 @@ public class EmployeeController {
         DataResponse<List<EmployeeDTO>> dataResponse = new DataResponse<>();
 
         dataResponse.setCode(HttpServletResponse.SC_OK);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(employeeService.getEmployeeByAddressAndName(address, name));
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
     @GetMapping("/query/age")
@@ -99,10 +95,9 @@ public class EmployeeController {
         DataResponse<List<EmployeeDTO>> dataResponse = new DataResponse<>();
 
         dataResponse.setCode(HttpServletResponse.SC_OK);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(employeeService.getEmployeeByAge(age));
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
     @GetMapping("/{id}")
@@ -113,14 +108,12 @@ public class EmployeeController {
 
         if (currEmployee.isPresent()) {
             dataResponse.setCode(HttpServletResponse.SC_OK);
-            dataResponse.setStatus(BuilderResponse.SUCCESS);
             dataResponse.setData(currEmployee.get());
-        } else {
-            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
-            dataResponse.setStatus(BuilderResponse.FAILED);
-        }
 
-        BuilderResponse.responseWriter(response, dataResponse);
+            WriteResponse.responseSuccessWithData(response, dataResponse);
+        } else {
+            WriteResponse.responseNotFound(response, "EMPLOYEE NOT FOUND");
+        }
     }
 
     @GetMapping("/find")
@@ -132,14 +125,12 @@ public class EmployeeController {
 
         if (currEmployee.isPresent()) {
             dataResponse.setCode(HttpServletResponse.SC_OK);
-            dataResponse.setStatus(BuilderResponse.SUCCESS);
             dataResponse.setData(currEmployee.get());
-        } else {
-            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
-            dataResponse.setStatus(BuilderResponse.FAILED);
-        }
 
-        BuilderResponse.responseWriter(response, dataResponse);
+            WriteResponse.responseSuccessWithData(response, dataResponse);
+        } else {
+            WriteResponse.responseNotFound(response, "EMPLOYEE NOT FOUND");
+        }
     }
 
     @GetMapping("/find/name/{name}")
@@ -160,10 +151,9 @@ public class EmployeeController {
         DataResponse<Page<EmployeeModel>> dataResponse = new DataResponse<>();
 
         dataResponse.setCode(HttpServletResponse.SC_OK);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(employeeService.getEmployeeByName(name, page, size));
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
     @GetMapping("/find/address/{address}")
@@ -184,10 +174,9 @@ public class EmployeeController {
         DataResponse<Page<EmployeeModel>> dataResponse = new DataResponse<>();
 
         dataResponse.setCode(HttpServletResponse.SC_OK);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(employeeService.getEmployeeByAddress(address, page, size));
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
     @PutMapping("/{id}")
@@ -199,14 +188,12 @@ public class EmployeeController {
 
         if (updatedEmployee != null) {
             dataResponse.setCode(HttpServletResponse.SC_OK);
-            dataResponse.setStatus(BuilderResponse.SUCCESS);
             dataResponse.setData(updatedEmployee);
-        } else {
-            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
-            dataResponse.setStatus(BuilderResponse.FAILED);
-        }
 
-        BuilderResponse.responseWriter(response, dataResponse);
+            WriteResponse.responseSuccessWithData(response, dataResponse);
+        } else {
+            WriteResponse.responseNotFound(response, "EMPLOYEE NOT FOUND");
+        }
     }
 
     @PatchMapping("/{id}")
@@ -218,14 +205,12 @@ public class EmployeeController {
 
         if (patchedEmployee != null) {
             dataResponse.setCode(HttpServletResponse.SC_OK);
-            dataResponse.setStatus(BuilderResponse.SUCCESS);
             dataResponse.setData(patchedEmployee);
-        } else {
-            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
-            dataResponse.setStatus(BuilderResponse.FAILED);
-        }
 
-        BuilderResponse.responseWriter(response, dataResponse);
+            WriteResponse.responseSuccessWithData(response, dataResponse);
+        } else {
+            WriteResponse.responseNotFound(response, "EMPLOYEE NOT FOUND");
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -236,28 +221,19 @@ public class EmployeeController {
 
         if (deletedEmployee != null) {
             dataResponse.setCode(HttpServletResponse.SC_OK);
-            dataResponse.setStatus(BuilderResponse.SUCCESS);
             dataResponse.setData(deletedEmployee);
-        } else {
-            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
-            dataResponse.setStatus(BuilderResponse.FAILED);
-        }
 
-        BuilderResponse.responseWriter(response, dataResponse);
+            WriteResponse.responseSuccessWithData(response, dataResponse);
+        } else {
+            WriteResponse.responseNotFound(response, "EMPLOYEE NOT FOUND");
+        }
     }
 
     @DeleteMapping("/name/{name}")
     public void deleteEmployeeByName(HttpServletRequest request, HttpServletResponse response,
                                      @PathVariable String name) throws IOException {
-        DataResponse<Boolean> dataResponse = new DataResponse<>();
-
         employeeService.deleteEmployeeByName(name);
-
-        dataResponse.setCode(HttpServletResponse.SC_OK);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
-        dataResponse.setData(true);
-
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessOK(response, "DELETE EMPLOYEE BY NAME SUCCESS");
     }
 
     @PostMapping("/upload/{id}")
@@ -269,13 +245,11 @@ public class EmployeeController {
 
         if (uploadedEmployeeFile != null) {
             dataResponse.setCode(HttpServletResponse.SC_OK);
-            dataResponse.setStatus(BuilderResponse.SUCCESS);
             dataResponse.setData(uploadedEmployeeFile);
-        } else {
-            dataResponse.setCode(HttpServletResponse.SC_NOT_FOUND);
-            dataResponse.setStatus(BuilderResponse.FAILED);
-        }
 
-        BuilderResponse.responseWriter(response, dataResponse);
+            WriteResponse.responseSuccessWithData(response, dataResponse);
+        } else {
+            WriteResponse.responseNotFound(response, "EMPLOYEE NOT FOUND");
+        }
     }
 }

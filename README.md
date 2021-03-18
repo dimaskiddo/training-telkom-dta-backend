@@ -26,3 +26,5 @@
 - SpringBoot - JPQL
 - SpringBoot - Native Query
 - SpringBoot - Refactor
+- SpringBoot - Authentication with JWT
+- SpringBoot - Build with Docker

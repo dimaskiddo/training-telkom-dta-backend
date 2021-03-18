@@ -1,7 +1,7 @@
 package co.id.telkom.digitalent.controller;
 
 import co.id.telkom.digitalent.model.MovieModel;
-import co.id.telkom.digitalent.response.BuilderResponse;
+import co.id.telkom.digitalent.response.WriteResponse;
 import co.id.telkom.digitalent.response.DataResponse;
 import co.id.telkom.digitalent.service.MovieService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +31,9 @@ public class MovieController {
         movieModel.setMovieReleaseYear(year);
 
         dataResponse.setCode(HttpServletResponse.SC_CREATED);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(movieService.createMovieModel(movieModel));
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
     @GetMapping("/{id}")
@@ -43,10 +42,9 @@ public class MovieController {
         DataResponse<MovieModel> dataResponse = new DataResponse<>();
 
         dataResponse.setCode(HttpServletResponse.SC_CREATED);
-        dataResponse.setStatus(BuilderResponse.SUCCESS);
         dataResponse.setData(movieService.getMovieById(id));
 
-        BuilderResponse.responseWriter(response, dataResponse);
+        WriteResponse.responseSuccessWithData(response, dataResponse);
     }
 
 }
